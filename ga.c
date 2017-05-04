@@ -105,12 +105,12 @@ int** initTab(int hs){
 }
 
 void usage(){
-  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed>\n"); 
+  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles>\n"); 
 }
 
 int main(int argc, char* argv[]){
 
-  if(argc!=4){
+  if(argc!=5){
     usage();
     return EXIT_SUCCESS;
   }
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]){
   int** tab = initTab(hs);
   int nbCreatures = atoi(argv[2]);
   creature* creatures = initCreatures(nbCreatures);
-  int nbObstacles = hs*2;
+  int nbObstacles = atoi(argv[4]);
   position* obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
   
   float s = atof(argv[3]);
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]){
   
     //The current generation runs until all the creatures stopped moving for a while
     /* while(oneCreatureIsMoving(creatures, nbCreatures, iteration)){//Current generation */
-    while(iteration<100){
+    while(iteration<100 && oneCreatureIsMoving(creatures, nbCreatures, iteration)){
 
       updateTab(tab, hs, creatures, nbCreatures, obstacles, nbObstacles);
       updateCreatures(creatures, nbCreatures, hs, tab, iteration);
@@ -172,7 +172,7 @@ int main(int argc, char* argv[]){
 	  s-=1000;
       }
       if(c == KEY_DOWN)
-      	s+=1000;
+	s+=1000;
        
       clear();
       iteration++;
