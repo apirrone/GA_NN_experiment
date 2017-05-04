@@ -50,16 +50,19 @@ creature* initCreatures(int nbCreatures);
 void updateCreatures(creature* creatures, int nbCreatures, int tabSize, int** tab, int iteration);
 int getIndiceMax(float* tab, int sizeTab);
 int getDirection(genCode gc);
-bool canMove(position p, int direction, int tabSize, creature* creatures, int nbCreatures);
+bool canMove(position p, int direction, int** tab, int tabSize, creature* creatures, int nbCreatures);
 //confidenceObstacleAhead : confidence (with noise) that there is an obstacle ahead
-void moveCreature(creature *c, int tabSize, int iteration, creature* creatures,int nbCreatures, float* vision);
+void moveCreature(creature *c, int** tab, int hs, int iteration, creature* creatures,int nbCreatures, float* vision);
 int randomBetween(int min, int max);
 bool oneCreatureIsMoving(creature* creatures, int nbCreatures, int iteration);
 creature* createNewGeneration(creature* creatures, int nbCreatures);
 creature mate(creature c1, creature c2, int id);
 genCode mixGenCode(genCode g1, genCode g2);
+genCode mixGenCodeOneGen(genCode g1, genCode g2);
+genCode mixGenChoseOne(genCode dad, genCode mom);
 genCode mutate(genCode g);
-bool collisionOtherCreature(position p, int direction, creature* creatures, int nbCreatures);
-
+bool collision(position p, int direction, creature* creatures, int nbCreatures, int** tab, int hs);
+int getIdByCoords(int x, int y, creature* creatures, int nbCreatures);
+float* getVision(creature c, int tabSize, int** tab, creature* creatures, int nbCreatures);
 
 #endif

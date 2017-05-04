@@ -36,7 +36,7 @@ creature* initCreatures(int nbCreatures){
   creature* creatures = malloc(nbCreatures*sizeof(creature));
 
   int nbNeuronsFirstLayer = 4;
-  int nbNeuronsMiddleLayer = 5;
+  int nbNeuronsMiddleLayer = 30;
   int nbNeuronsLastLayer = 4;
 
   int nbGenes = nbNeuronsFirstLayer*nbNeuronsMiddleLayer + nbNeuronsMiddleLayer*nbNeuronsLastLayer;
@@ -58,26 +58,38 @@ creature* initCreatures(int nbCreatures){
   
 }
 
-float* getVision(creature c, int tabSize){
+int getIdByCoords(int x, int y, creature* creatures, int nbCreatures){
+
+  for(int i = 0 ; i < nbCreatures ; i++){
+    if(creatures[i].pos.x == x && creatures[i].pos.y == y)
+      return creatures[i].id;
+  }
+
+  return -1;
+  
+}
+
+float* getVision(creature c, int tabSize, int** tab, creature* creatures, int nbCreatures){
   
   float* vision = malloc(VISION_SIZE*sizeof(float));
-  position coords = c.pos;
-  if( coords.y-1 <=0 )
+  position coords = c.pos; 
+  
+  if( coords.y-1 <=0 || collision(coords, 0, creatures, nbCreatures, tab, tabSize))
     vision[0] = 1-(randomBetween(0, 30)/100); 
   else
     vision[0] = 0; 
   
-  if( coords.x+1 >= tabSize )
+  if( coords.x+1 >= tabSize || collision(coords, 1, creatures, nbCreatures, tab, tabSize))
     vision[1] = 1-(randomBetween(0, 30)/100); 
   else
     vision[1] = 0; 
   
-  if( coords.y+1 >= tabSize )
+  if( coords.y+1 >= tabSize || collision(coords, 2, creatures, nbCreatures, tab, tabSize))
     vision[2] = 1-(randomBetween(0, 30)/100); 
   else
     vision[2] = 0;
   
-  if( coords.x-1 <=0 )
+  if( coords.x-1 <=0 || collision(coords, 3, creatures, nbCreatures, tab, tabSize))
     vision[3] = 1-(randomBetween(0, 30)/100); 
   else
     vision[3] = 0;
@@ -89,29 +101,11 @@ float* getVision(creature c, int tabSize){
 void updateCreatures(creature* creatures, int nbCreatures, int tabSize, int** tab, int iteration){
   
   for(int i = 0 ; i < nbCreatures ; i++){
-    float* vision = getVision(creatures[i], tabSize);
-    /* position coords = creatures[i].pos; */
-    /* if( coords.y-1 <=0 ) */
-    /*   vision[0] = 1-(randomBetween(0, 30)/100);  */
-    /* else */
-    /*   vision[0] = 0;  */
-
-    /* if( coords.x+1 >= tabSize ) */
-    /*   vision[1] = 1-(randomBetween(0, 30)/100);  */
-    /* else */
-    /*   vision[1] = 0;  */
-
-    /* if( coords.y+1 >= tabSize ) */
-    /*   vision[2] = 1-(randomBetween(0, 30)/100);  */
-    /* else */
-    /*   vision[2] = 0; */
-
-    /* if( coords.x-1 <=0 ) */
-    /*   vision[3] = 1-(randomBetween(0, 30)/100);  */
-    /* else */
-    /*   vision[3] = 0;     */
     
-    moveCreature(&creatures[i], tabSize, iteration, creatures, nbCreatures, vision);
+    float* vision = getVision(creatures[i], tabSize, tab, creatures, nbCreatures);
+    
+    moveCreature(&creatures[i], tab, tabSize, iteration, creatures, nbCreatures, vision);
+    
   } 
 }
 
@@ -135,61 +129,47 @@ void updateCreatures(creature* creatures, int nbCreatures, int tabSize, int** ta
 /*   return getIndiceMax(gc.genes, gc.nbGenes); */
 /* } */
 
-bool collisionOtherCreature(position p, int direction, creature* creatures, int nbCreatures){
+bool collision(position p, int direction, creature* creatures, int nbCreatures, int** tab, int hs){
 
   position newPos;
   
   switch(direction){
   case 0 :
+    newPos.x = p.x;
     newPos.y = p.y-1;
     break;
       
   case 1 :
     newPos.x = p.x+1;
+    newPos.y = p.y;
     break;
       
   case 2 :
+    newPos.x = p.x;
     newPos.y = p.y+1;
     break;
       
   case 3 :
     newPos.x = p.x-1;
+    newPos.y = p.y;
+    break;
+  default:
+    printf("creature.c:159 : WEIRD\n");
     break;
   }
-
-  for(int i = 0 ; i < nbCreatures ; i++){
-    if(creatures[i].pos.x == newPos.x && creatures[i].pos.y == newPos.y){
-      /* printf("COLLISION\n"); */
-      return true;
-    }
-  }
-
-  return false;
+  /* printf("direction %d\n", direction); */
+  /* printf("pos : %d, %d\n", p.x, p.y); */
+  /* printf("newpos : %d, %d\n", newPos.x, newPos.y); */
   
-}
-
-//0 : up
-//1 : right
-//2 : down
-//3 : left
-bool canMove(position p, int direction, int tabSize, creature* creatures, int nbCreatures){
-  /* printf("direction : %d\n", direction); */
-  if(direction == 0 || direction == 2)
-    if(p.y > 0 && p.y < tabSize-1){
-      /* if(!collisionOtherCreature(p, direction, creatures, nbCreatures)) */
-      /* printf("CAN MOVE\n"); */
+  for(int i = 0 ; i < nbCreatures ; i++)
+    if(creatures[i].pos.x == newPos.x && creatures[i].pos.y == newPos.y)
       return true;
-    }
+
+  if(tab[newPos.x][newPos.y] == 2)
+    return true;
+
   
   
-  if(direction == 1 || direction == 3)
-    if(p.x > 0 && p.x < tabSize-1){
-      /* if(!collisionOtherCreature(p, direction, creatures, nbCreatures)) */
-      /* printf("CAN MOVE\n"); */
-      return true;
-    }
-
-  /* printf("CANNOT MOVE\n"); */
   return false;  
 }
 
@@ -197,13 +177,38 @@ bool canMove(position p, int direction, int tabSize, creature* creatures, int nb
 //1 : right
 //2 : down
 //3 : left
-void moveCreature(creature *c, int tabSize, int iteration, creature* creatures, int nbCreatures, float* vision){
+bool canMove(position p, int direction, int** tab, int hs, creature* creatures, int nbCreatures){
+  /* printf("direction : %d\n", direction); */
+  if(direction == 0 || direction == 2)
+    if(p.y > 0 && p.y < hs-1){
+      if(!collision(p, direction, creatures, nbCreatures, tab, hs))
+	/* printf("CAN MOVE\n"); */
+	return true;
+    }
+  
+  
+  if(direction == 1 || direction == 3)
+    if(p.x > 0 && p.x < hs-1){
+      if(!collision(p, direction, creatures, nbCreatures, tab, hs))
+	/* printf("CAN MOVE\n"); */
+	return true;
+    }
+
+  /* printf("%d %d : CANNOT MOVE\n", p.x, p.y); */
+  return false;  
+}
+
+//0 : up
+//1 : right
+//2 : down
+//3 : left
+void moveCreature(creature *c, int** tab, int hs, int iteration, creature* creatures, int nbCreatures, float* vision){
 
   /* int direction = getDirection(c->gen); */
   
   int direction = getDirectionFromNeuralNetwork(c->brain, vision);
   
-  if(canMove(c->pos, direction, tabSize, creatures, nbCreatures)){
+  if(canMove(c->pos, direction, tab, hs, creatures, nbCreatures)){
 
     c->iterationLastMoved = iteration;
     
@@ -268,10 +273,8 @@ creature* createNewGeneration(creature* creatures, int nbCreatures){
 
       creatures[j].score = euclidianDistance(creatures[j].originPos, creatures[j].pos);//Add notion of time needed to reach distance
       
-      //for now, multiplying the score with the random number would give too much of an advantage to the
-      //creatures going the good way 
-      /* scores[j] = creatures[j].score+randomBetween(0, 100); */
-      creatureScore = creatures[j].score+randomBetween(0, 100);
+      creatureScore = creatures[j].score+randomBetween(0, 20);
+      /* creatureScore = creatures[j].score; */
 
       if(creatureScore>max1){
 	max2 = max1;
@@ -286,7 +289,20 @@ creature* createNewGeneration(creature* creatures, int nbCreatures){
       
     }
 
-    newCreatures[i] = mate(creatures[first], creatures[second], i);
+    if(i==0){
+      newCreatures[i] = creatures[first];
+      newCreatures[i].id = 0;
+      newCreatures[i].life = INITIAL_LIFE;
+      newCreatures[i].score = 0;
+      newCreatures[i].iterationLastMoved = 0;
+      newCreatures[i].originPos.x = 1;  
+      newCreatures[i].originPos.y = 1;  
+      newCreatures[i].pos.x = 1;  
+      newCreatures[i].pos.y = 1;
+      
+    }
+    else
+      newCreatures[i] = mate(creatures[first], creatures[second], i);
     
   }
 
@@ -307,6 +323,9 @@ creature mate(creature c1, creature c2, int id){
   baby.pos.x = id+1;  
   baby.pos.y = 1;
   baby.gen = mixGenCode(c1.gen, c2.gen);
+  /* baby.gen = mixGenCodeOneGen(c1.gen, c2.gen); */
+  
+  /* baby.gen = mixGenChoseOne(c1.gen, c2.gen); */
   
   int nbNeuronsFirstLayer = c1.brain.nbNeuronsFirstLayer;
   int nbNeuronsMiddleLayer = c1.brain.nbNeuronsMiddleLayer;
@@ -315,6 +334,28 @@ creature mate(creature c1, creature c2, int id){
   baby.brain = initNeuralNetwork(nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, baby.gen.genes, baby.gen.nbGenes);
   
   return baby;
+}
+
+genCode mixGenChoseOne(genCode dad, genCode mom){
+  genCode gen;
+  int choice = randomBetween(0, 1);
+  gen = (choice?dad:mom);
+  gen = mutate(gen);
+  
+  return gen;
+}
+
+genCode mixGenCodeOneGen(genCode dad, genCode mom){
+  genCode gen;
+
+  int choice = randomBetween(0, dad.nbGenes);
+  gen = dad;
+  gen.genes[choice] = mom.genes[choice];
+
+  gen = mutate(gen);
+  
+  return gen;
+  
 }
 
 //uniform crossover 
