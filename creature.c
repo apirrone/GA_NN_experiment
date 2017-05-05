@@ -1,5 +1,4 @@
 
-
 #include "creature.h"
 
 int randomBetween(int min, int max){
@@ -8,9 +7,9 @@ int randomBetween(int min, int max){
 
 void printGenCode(genCode gc){
 
-  for(int i = 0 ; i < gc.nbGenes ; i++){
+  for(int i = 0 ; i < gc.nbGenes ; i++)
     printf("%d : %f\n", i, gc.genes[i]);
-  }
+
   printf("\n");
 
 }
@@ -36,22 +35,31 @@ creature* initCreatures(int nbCreatures){
   creature* creatures = malloc(nbCreatures*sizeof(creature));
 
   int nbNeuronsFirstLayer = 4;
-  int nbNeuronsMiddleLayer = 30;
+  int nbNeuronsMiddleLayer = 15;
   int nbNeuronsLastLayer = 4;
 
   int nbGenes = nbNeuronsFirstLayer*nbNeuronsMiddleLayer + nbNeuronsMiddleLayer*nbNeuronsLastLayer;
   
   for(int i = 0 ; i < nbCreatures ; i++){
+    
     creatures[i].id = i;
     creatures[i].life = INITIAL_LIFE;
-    creatures[i].score = 0;
-    creatures[i].iterationLastMoved = 0; 
-    creatures[i].originPos.x = i+1;  
-    creatures[i].originPos.y = 1;
-    creatures[i].pos.x = i+1;  
-    creatures[i].pos.y = 1;
+    creatures[i].score = 1;
+    creatures[i].iterationLastMoved = 0;
+    
+    creatures[i].originPos.x = 1;  
+    creatures[i].originPos.y = i+1;
+    
+    creatures[i].pos.x = 1;  
+    creatures[i].pos.y = i+1;
+    
+    creatures[i].prevPos.x = 1;
+    creatures[i].prevPos.y = i+1;
+    
     creatures[i].gen = initGenCode(nbGenes);
+    
     creatures[i].brain = initNeuralNetwork(nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, creatures[i].gen.genes, creatures[i].gen.nbGenes);
+    
   }
 
   return creatures;
@@ -60,10 +68,9 @@ creature* initCreatures(int nbCreatures){
 
 int getIdByCoords(int x, int y, creature* creatures, int nbCreatures){
 
-  for(int i = 0 ; i < nbCreatures ; i++){
+  for(int i = 0 ; i < nbCreatures ; i++)
     if(creatures[i].pos.x == x && creatures[i].pos.y == y)
-      return creatures[i].id;
-  }
+      return creatures[i].id; 
 
   return -1;
   
@@ -103,31 +110,16 @@ void updateCreatures(creature* creatures, int nbCreatures, int tabSize, int** ta
   for(int i = 0 ; i < nbCreatures ; i++){
     
     float* vision = getVision(creatures[i], tabSize, tab, creatures, nbCreatures);
-    
+
     moveCreature(&creatures[i], tab, tabSize, iteration, creatures, nbCreatures, vision);
     
-  } 
+    if((creatures[i].pos.x == creatures[i].prevPrevPos.x && creatures[i].pos.y == creatures[i].prevPrevPos.y) ||
+       (creatures[i].pos.x == creatures[i].prevPos.x && creatures[i].pos.y == creatures[i].prevPos.y))
+      creatures[i].score/0.1;
+    
+  }
+  
 }
-
-
-
-/* int getIndiceMax(float* tab, int sizeTab){ */
-  
-/*   float max = FLT_MIN; */
-/*   int indice = 0; */
-/*   for(int i = 0 ; i < sizeTab ; i++){ */
-/*     if(tab[i] > max){ */
-/*       max = tab[i]; */
-/*       indice = i; */
-/*     } */
-/*   } */
-  
-/*   return indice; */
-/* } */
-
-/* int getDirection(genCode gc){ */
-/*   return getIndiceMax(gc.genes, gc.nbGenes); */
-/* } */
 
 bool collision(position p, int direction, creature* creatures, int nbCreatures, int** tab, int hs){
 
@@ -157,9 +149,6 @@ bool collision(position p, int direction, creature* creatures, int nbCreatures, 
     printf("creature.c:159 : WEIRD\n");
     break;
   }
-  /* printf("direction %d\n", direction); */
-  /* printf("pos : %d, %d\n", p.x, p.y); */
-  /* printf("newpos : %d, %d\n", newPos.x, newPos.y); */
   
   for(int i = 0 ; i < nbCreatures ; i++)
     if(creatures[i].pos.x == newPos.x && creatures[i].pos.y == newPos.y)
@@ -168,8 +157,6 @@ bool collision(position p, int direction, creature* creatures, int nbCreatures, 
   if(tab[newPos.x][newPos.y] == 2)
     return true;
 
-  
-  
   return false;  
 }
 
@@ -178,23 +165,17 @@ bool collision(position p, int direction, creature* creatures, int nbCreatures, 
 //2 : down
 //3 : left
 bool canMove(position p, int direction, int** tab, int hs, creature* creatures, int nbCreatures){
-  /* printf("direction : %d\n", direction); */
+
   if(direction == 0 || direction == 2)
-    if(p.y > 0 && p.y < hs-1){
+    if(p.y > 0 && p.y < hs-1)
       if(!collision(p, direction, creatures, nbCreatures, tab, hs))
-	/* printf("CAN MOVE\n"); */
-	return true;
-    }
-  
+	return true; 
   
   if(direction == 1 || direction == 3)
-    if(p.x > 0 && p.x < hs-1){
+    if(p.x > 0 && p.x < hs-1)
       if(!collision(p, direction, creatures, nbCreatures, tab, hs))
-	/* printf("CAN MOVE\n"); */
-	return true;
-    }
+	return true; 
 
-  /* printf("%d %d : CANNOT MOVE\n", p.x, p.y); */
   return false;  
 }
 
@@ -203,10 +184,14 @@ bool canMove(position p, int direction, int** tab, int hs, creature* creatures, 
 //2 : down
 //3 : left
 void moveCreature(creature *c, int** tab, int hs, int iteration, creature* creatures, int nbCreatures, float* vision){
-
-  /* int direction = getDirection(c->gen); */
   
   int direction = getDirectionFromNeuralNetwork(c->brain, vision);
+
+  c->prevPrevPos.x = c->prevPos.x;
+  c->prevPrevPos.y = c->prevPos.y;
+  
+  c->prevPos.x = c->pos.x;
+  c->prevPos.y = c->pos.y;
   
   if(canMove(c->pos, direction, tab, hs, creatures, nbCreatures)){
 
@@ -223,7 +208,6 @@ void moveCreature(creature *c, int** tab, int hs, int iteration, creature* creat
       
     case 2 :
       c->pos.y +=1;
-      /* c->score++; */
       break;
       
     case 3 :
@@ -251,7 +235,7 @@ creature* createNewGeneration(creature* creatures, int nbCreatures){
 
   creature* newCreatures = malloc(nbCreatures*sizeof(creature));
   
-  int scores[nbCreatures];
+  float scores[nbCreatures];
 
   int max1;
   int max2;
@@ -260,51 +244,101 @@ creature* createNewGeneration(creature* creatures, int nbCreatures){
   int second;
 
   int creatureScore;
+  for(int i = 0 ; i < nbCreatures ; i++)
+    scores[i] = euclidianDistance(creatures[i].originPos, creatures[i].pos)*creatures[i].score;
+
+  float maxScore = 0;
   
+  for(int i = 0 ; i < nbCreatures ; i++)
+    if(scores[i] > maxScore)
+      maxScore = scores[i];
+
+  for(int i = 0 ; i < nbCreatures ; i++)
+    scores[i]/=maxScore;
+
+  int intScores[nbCreatures];
+
+  for(int i = 0 ; i < nbCreatures ; i++)
+    intScores[i] = scores[i]*100;
+
+  int sum = 0;
+
+  for(int i = 0 ; i < nbCreatures ; i++)
+    sum+=(intScores[i]*intScores[i]);
+
+  int association[sum];
+  int final[sum];
+  
+  int iterFinal = 0;
+  for(int i = 0 ; i < nbCreatures ; i++)
+    for(int j = 0 ; j < intScores[i]*intScores[i] ; j++){
+      final[iterFinal] = intScores[i]*intScores[i];
+      association[iterFinal++] = i;
+    } 
+  
+
   for(int i = 0 ; i < nbCreatures ; i++){
     
-    max1 = 0;
-    max2 = 0;
-  
-    first = 0;
-    second = 1;
+    int c1 = randomBetween(0, sum-1);
+    int c2 = randomBetween(0, sum-1);
     
-    for(int j = 0 ; j < nbCreatures ; j++){
-
-      creatures[j].score = euclidianDistance(creatures[j].originPos, creatures[j].pos);//Add notion of time needed to reach distance
-      
-      creatureScore = creatures[j].score+randomBetween(0, 20);
-      /* creatureScore = creatures[j].score; */
-
-      if(creatureScore>max1){
-	max2 = max1;
-	second = first;
-	max1 = creatureScore;
-	first = j;
-      }
-      else if(creatureScore > max2){
-	max2 = creatureScore;
-	second = j;
-      }
-      
-    }
-
-    if(i==0){
-      newCreatures[i] = creatures[first];
-      newCreatures[i].id = 0;
-      newCreatures[i].life = INITIAL_LIFE;
-      newCreatures[i].score = 0;
-      newCreatures[i].iterationLastMoved = 0;
-      newCreatures[i].originPos.x = 1;  
-      newCreatures[i].originPos.y = 1;  
-      newCreatures[i].pos.x = 1;  
-      newCreatures[i].pos.y = 1;
-      
-    }
-    else
-      newCreatures[i] = mate(creatures[first], creatures[second], i);
+    while(creatures[association[c2]].id == creatures[association[c1]].id)
+      c2 = randomBetween(0, sum-1);
     
+    
+    newCreatures[i] = mate(creatures[association[c1]], creatures[association[c2]], i);    
+			   
   }
+    
+  /* for(int i = 0 ; i < nbCreatures ; i++){ */
+    
+  /*   max1 = 0; */
+  /*   max2 = 0; */
+  
+  /*   first = 0; */
+  /*   second = 1; */
+    
+  /*   for(int j = 0 ; j < nbCreatures ; j++){ */
+
+  /*     creatures[j].score = (euclidianDistance(creatures[j].originPos, creatures[j].pos))*creatures[j].score;//Add notion of time needed to reach distance */
+      
+  /*     /\* creatureScore = creatures[j].score+randomBetween(0, 1); *\/ */
+  /*     /\* creatureScore = creatures[j].score; *\/ */
+
+  /*     if(creatureScore>max1){ */
+  /* 	max2 = max1; */
+  /* 	second = first; */
+  /* 	max1 = creatureScore; */
+  /* 	first = j; */
+  /*     } */
+  /*     else if(creatureScore > max2){ */
+  /* 	max2 = creatureScore; */
+  /* 	second = j; */
+  /*     } */
+      
+  /*   } */
+
+  /*   if(i==0){ */
+  /*     newCreatures[i] = creatures[first]; */
+  /*     newCreatures[i].id = 0; */
+  /*     newCreatures[i].life = INITIAL_LIFE; */
+  /*     newCreatures[i].score = 1; */
+  /*     newCreatures[i].iterationLastMoved = 0; */
+  /*     newCreatures[i].originPos.x = 1;   */
+  /*     newCreatures[i].originPos.y = 1;   */
+  /*     newCreatures[i].pos.x = 1;   */
+  /*     newCreatures[i].pos.y = 1; */
+  /*     newCreatures[i].prevPos.x = 1;   */
+  /*     newCreatures[i].prevPos.y = 1; */
+  /*     newCreatures[i].prevPrevPos.x = 1;   */
+  /*     newCreatures[i].prevPrevPos.y = 1; */
+      
+      
+  /*   } */
+  /*   else */
+  /*     newCreatures[i] = mate(creatures[first], creatures[second], i); */
+    
+  /* } */
 
   return newCreatures;
   
@@ -316,15 +350,22 @@ creature mate(creature c1, creature c2, int id){
   
   baby.id = id;
   baby.life = INITIAL_LIFE;
-  baby.score = 0;
+  baby.score = 1;
   baby.iterationLastMoved = 0;
-  baby.originPos.x = id+1;  
-  baby.originPos.y = 1;  
-  baby.pos.x = id+1;  
-  baby.pos.y = 1;
-  baby.gen = mixGenCode(c1.gen, c2.gen);
-  /* baby.gen = mixGenCodeOneGen(c1.gen, c2.gen); */
+  baby.originPos.x = 1;  
+  baby.originPos.y = id+1;
   
+  baby.pos.x = 1;  
+  baby.pos.y = id+1;
+  
+  baby.prevPos.x = 1;  
+  baby.prevPos.y = id+1;
+  
+  baby.prevPrevPos.x = 1;  
+  baby.prevPrevPos.y = id+1;
+  
+  baby.gen = mixGenCode(c1.gen, c2.gen); 
+  /* baby.gen = mixGenCodeOneGen(c1.gen, c2.gen); */ 
   /* baby.gen = mixGenChoseOne(c1.gen, c2.gen); */
   
   int nbNeuronsFirstLayer = c1.brain.nbNeuronsFirstLayer;
@@ -364,14 +405,14 @@ genCode mixGenCode(genCode dad, genCode mom){
   genCode gen;
   gen.genes = malloc(dad.nbGenes*sizeof(float));//omg a feminist would kill me
   gen.nbGenes = dad.nbGenes;
-  
   for(int i = 0 ; i < dad.nbGenes ; i++){
     
     if(randomBetween(0, 1) == 0)//dad's gene
       gen.genes[i] = dad.genes[i]; 
     else//mom's gene
       gen.genes[i] = mom.genes[i];
-    
+   
+
   }
   
   gen = mutate(gen);
@@ -384,7 +425,6 @@ genCode mutate(genCode g){
   
   int selected = randomBetween(0, g.nbGenes);
   g.genes[selected] += randomBetween(-100, 100);
-  /* g.genes[selected] = randomBetween(0, ); */
 
   return g;
   

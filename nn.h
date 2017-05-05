@@ -39,10 +39,6 @@ struct neural_network{
 
   neuron* neurons;
   
-  /* neuron* firstLayer; */
-  /* neuron* middleLayer; */
-  /* neuron* lastLayer; */
-  
   int nbNeuronsFirstLayer;
   int nbNeuronsMiddleLayer;
   int nbNeuronsLastLayer;

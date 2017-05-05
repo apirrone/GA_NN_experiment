@@ -26,6 +26,7 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
     neural_net.neurons[id].beforeNeighbors = NULL;
     neural_net.neurons[id].nbBeforeNeighbors = 0;
     id++;
+    
   }
 
   //init middleLayer  
@@ -44,15 +45,12 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
     int iterBeforeNeighbors = 0;
     
     for(int j = 0 ; j < neural_net.nbNeurons ; j++)
-      if(neural_net.neurons[j].firstLayer){
+      if(neural_net.neurons[j].firstLayer)
 	neural_net.neurons[id].beforeNeighbors[iterBeforeNeighbors++] = neural_net.neurons[j].id; 
-      }
-    
+
     id++;
     
   }
-
-  
   
   //init lastLayer
   for(int i = 0 ; i < nbNeuronsLastLayer ; i++){
@@ -69,9 +67,8 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
 
     int iterBeforeNeighbors = 0;
     for(int j = 0 ; j < neural_net.nbNeurons ; j++)
-      if(neural_net.neurons[j].middleLayer){
+      if(neural_net.neurons[j].middleLayer)
 	neural_net.neurons[id].beforeNeighbors[iterBeforeNeighbors++] = neural_net.neurons[j].id;
-      }
 
     id++;
   }
@@ -80,10 +77,9 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
   int iterLinks = 0;
 
   //Fill firstLayer->middleLayer
-  for(int i = 0 ; i < neural_net.nbNeurons ; i++){
-    if(neural_net.neurons[i].firstLayer){
-
-      for(int j = 0 ; j < neural_net.nbNeurons ; j++){
+  for(int i = 0 ; i < neural_net.nbNeurons ; i++)
+    if(neural_net.neurons[i].firstLayer)
+      for(int j = 0 ; j < neural_net.nbNeurons ; j++)
 	if(neural_net.neurons[j].middleLayer){
 	  
 	  neural_net.links[iterLinks].idNeuronSource = neural_net.neurons[i].id;
@@ -92,11 +88,6 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
 	  iterLinks++;
 	  
 	}
-      }
-      
-    }
-    
-  }
 
   
   //Fill middleLayer->LastLayer
@@ -104,8 +95,7 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
     if(neural_net.neurons[i].middleLayer)
       
       for(int j = 0 ; j < neural_net.nbNeurons ; j++) 
-	if(neural_net.neurons[j].lastLayer){
-	  
+	if(neural_net.neurons[j].lastLayer){	  
 
 	  neural_net.links[iterLinks].idNeuronSource = neural_net.neurons[i].id;
 	  neural_net.links[iterLinks].idNeuronTarget = neural_net.neurons[j].id;
@@ -124,14 +114,13 @@ int getIndiceMax(float* tab, int sizeTab){
   float max = FLT_MIN;
   int indice = 0;
   
-  for(int i = 0 ; i < sizeTab ; i++){
+  for(int i = 0 ; i < sizeTab ; i++)
     if(tab[i] > max){
       max = tab[i];
       indice = i;
-    }
-  }
+    } 
 
-  return indice;
+  return indice;  
 }
 
 //Inputs :
@@ -146,14 +135,10 @@ int getDirectionFromNeuralNetwork(nn neural_net, float* inputs){
   float outputs[neural_net.nbNeuronsLastLayer];
 
   int iterOutputs = 0;
-  for(int i = 0 ; i < neural_net.nbNeurons ; i++){
+  for(int i = 0 ; i < neural_net.nbNeurons ; i++)
     if(neural_net.neurons[i].lastLayer)
-      outputs[iterOutputs++] = getNeuronOutput(neural_net.neurons[i], neural_net);
-  }
-
-  /* for(int i = 0 ; i < 4 ; i++){ */
-  /*   printf("outputs[%d] : %f\n", i, outputs[i]); */
-  /* } */
+      outputs[iterOutputs++] = getNeuronOutput(neural_net.neurons[i], neural_net); 
+  
   return getIndiceMax(outputs, neural_net.nbNeuronsLastLayer); 
 }
 
@@ -161,15 +146,13 @@ float getNeuronOutput(neuron n, nn neural_net){
   
   float sum = 0;
 
-  if(n.firstLayer){//CACA enlever les id<4 et id>=0 -> segfault sans ça ... 
+  if(n.firstLayer)
     sum += neural_net.globalInputs[n.id];
-  }
-  else{
-    for(int i = 0 ; i < n.nbBeforeNeighbors ; i++){
+  
+  else
+    for(int i = 0 ; i < n.nbBeforeNeighbors ; i++)
       sum += getNeuronOutput(getNeuronById(n.beforeNeighbors[i], neural_net), neural_net)*getWeightLink(n.id, n.beforeNeighbors[i], neural_net);
-    }    
-  }
-
+  
   sum = sigmoid(sum);
   return sigmoid(sum);
 }
@@ -195,7 +178,6 @@ float getWeightLink(int idN1, int idN2, nn neural_net){
   for(int i = 0 ; i < neural_net.nbLinks ; i++){
     if((neural_net.links[i].idNeuronSource == idN1 || neural_net.links[i].idNeuronSource == idN2) &&
        (neural_net.links[i].idNeuronTarget == idN1 || neural_net.links[i].idNeuronTarget == idN2)){
-      /* printf("weight : %f\n", neural_net.links[i].weight);       */
       return neural_net.links[i].weight;
     } 
   }

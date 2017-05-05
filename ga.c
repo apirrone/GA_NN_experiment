@@ -144,9 +144,6 @@ int main(int argc, char* argv[]){
   init_pair(4, COLOR_BLACK, COLOR_BLUE);
   
   while(1){
-  
-    //The current generation runs until all the creatures stopped moving for a while
-    /* while(oneCreatureIsMoving(creatures, nbCreatures, iteration)){//Current generation */
     while(iteration<100 && oneCreatureIsMoving(creatures, nbCreatures, iteration)){
 
       updateTab(tab, hs, creatures, nbCreatures, obstacles, nbObstacles);

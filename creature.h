@@ -35,10 +35,12 @@ typedef struct position position;
 struct creature{
   int id;
   int life;
-  int score;
+  float score;
   int iterationLastMoved;
   position originPos;
   position pos;
+  position prevPos;
+  position prevPrevPos;
   genCode gen;
   nn brain;
 };
