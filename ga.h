@@ -10,4 +10,6 @@
 
 #include <ncurses.h>
 
+#include <string.h>
+
 #endif

@@ -19,16 +19,14 @@ typedef struct neuron_link neuron_link;
 struct neuron{
   
   int id;
-  int threshold;
 
   bool firstLayer;
   bool middleLayer;
   bool lastLayer;
 
   //Connected neurons before this neuron
-  int* beforeNeighbors;//ids
-  /* struct neuron* beforeNeighbors; */
   int nbBeforeNeighbors;
+  int* beforeNeighbors;//ids
   
 };
 
@@ -45,8 +43,8 @@ struct neural_network{
 
   int nbNeurons;
 
-  neuron_link* links;
   int nbLinks;// as much genes as there are links
+  neuron_link* links;
 
   float *globalInputs;
   

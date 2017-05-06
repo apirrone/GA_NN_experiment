@@ -35,14 +35,19 @@ typedef struct position position;
 struct creature{
   int id;
   int life;
-  float score;
   int iterationLastMoved;
+  
+  float score;
+  
   position originPos;
   position pos;
   position prevPos;
   position prevPrevPos;
+  
   genCode gen;
+  
   nn brain;
+  
 };
 
 typedef struct creature creature;
@@ -66,5 +71,9 @@ genCode mutate(genCode g);
 bool collision(position p, int direction, creature* creatures, int nbCreatures, int** tab, int hs);
 int getIdByCoords(int x, int y, creature* creatures, int nbCreatures);
 float* getVision(creature c, int tabSize, int** tab, creature* creatures, int nbCreatures);
+
+void saveBestCreature(creature c, char* path);
+creature loadCreature(char* path);
+
 
 #endif

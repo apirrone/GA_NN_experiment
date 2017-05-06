@@ -26,6 +26,56 @@ char intChar(int a){
   }
 }
 
+void saveBestCreatureBrain(nn brain, char* path){
+
+  FILE *f = fopen(path, "w+");
+
+  if (f == NULL) {
+    printf("Error opening file!\n");
+    exit(1);
+  }
+
+  fprintf(f, "%d;%d;%d;%d;%d;\n", brain.nbNeurons, brain.nbLinks, brain.nbNeuronsFirstLayer, brain.nbNeuronsMiddleLayer, brain.nbNeuronsLastLayer);
+  
+  for(int i = 0 ; i < brain.nbLinks ; i++){
+    neuron_link l = brain.links[i];
+    fprintf(f, "%f;\n", l.weight);
+  }
+
+  fclose(f);
+  
+  
+}
+
+nn loadCreatureBrain(char* path){
+  
+  char c;
+  FILE *f = fopen(path, "r");
+
+  char* line=NULL;
+  size_t len = 0;
+  ssize_t read;
+
+  read = getline(&line, &len, f);
+
+  int nbNeurons = atoi(strtok(line, ";"));
+  int nbLinks = atoi(strtok(NULL, ";"));
+  int nbNeuronsFirstLayer = atoi(strtok(NULL, ";"));
+  int nbNeuronsMiddleLayer = atoi(strtok(NULL, ";"));
+  int nbNeuronsLastLayer = atoi(strtok(NULL, ";"));
+  
+  float weights[nbLinks];
+  for(int i = 0 ; i < nbLinks ; i++){
+    read = getline(&line, &len, f);
+    weights[i] = atof(strtok(line, ";"));
+  }
+  
+  fclose(f);
+
+  return initNeuralNetwork(nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, weights, nbLinks);
+
+}
+
 void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles){
   
   for(int i = 0 ; i < hs ; i++)
@@ -39,7 +89,6 @@ void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position
   for(int k = 0 ; k < nbCreatures ; k++)	
     tab[creatures[k].pos.x][creatures[k].pos.y] = 1;
   
-
 }
 
 void display(int** tab, int hsize, creature* creatures, int nbCreatures){
@@ -105,33 +154,47 @@ int** initTab(int hs){
 }
 
 void usage(){
-  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles>\n"); 
+  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles> <train_mode>\n"); 
 }
 
 int main(int argc, char* argv[]){
 
-  if(argc!=5){
+  if(argc!=6){
     usage();
     return EXIT_SUCCESS;
   }
-
+  
+  /* loadCreatureBrain("test"); */
+  /* return 0; */
+  
   srand(time(NULL));
   
   int hs = atoi(argv[1]);
   int** tab = initTab(hs);
   int nbCreatures = atoi(argv[2]);
-  creature* creatures = initCreatures(nbCreatures);
+  float s = atof(argv[3]);
   int nbObstacles = atoi(argv[4]);
+  bool train = atoi(argv[5]);
+
+  creature* creatures = initCreatures(nbCreatures);
+
+  if(train){
+    printf("trainint\n");
+    nn loadedBrain = loadCreatureBrain("OneOfLastEpoch");
+    for(int i = 0 ; i < nbCreatures ; i++)
+      creatures[i].brain = loadedBrain; 
+  }
+  
   position* obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
   
-  float s = atof(argv[3]);
   s*=100000;
   s+=1;
-  
+
   WINDOW* w = initscr();
   cbreak();
   nodelay(w, TRUE);
   keypad(stdscr, TRUE);
+  
   int iteration = 0;
   int epoch = 0;
   int c;
@@ -174,12 +237,23 @@ int main(int argc, char* argv[]){
       clear();
       iteration++;
     }
-
+    if(train)
+      saveBestCreatureBrain(creatures[0].brain, "OneOfLastEpoch");
+    /* creature test = loadCreature("test"); */
+    endwin();
+    /* return 0; */
     iteration = 0;
     
     epoch ++;
     obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
-    creatures = createNewGeneration(creatures, nbCreatures);
+    if(train)
+      creatures = createNewGeneration(creatures, nbCreatures);
+    else{
+      creatures = initCreatures(nbCreatures);
+      nn loadedBrain = loadCreatureBrain("OneOfLastEpoch");
+      for(int i = 0 ; i < nbCreatures ; i++)
+	creatures[i].brain = loadedBrain;       
+    }
   }
 
   printf("DONE\n");

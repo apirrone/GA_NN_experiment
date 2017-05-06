@@ -16,7 +16,6 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
   //init firstLayer
   for(int i = 0 ; i < nbNeuronsFirstLayer ; i++){
     
-    neural_net.neurons[id].threshold = 2;
     neural_net.neurons[id].id = id;
     
     neural_net.neurons[id].firstLayer = true;
@@ -32,7 +31,6 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
   //init middleLayer  
   for(int i = 0 ; i < nbNeuronsMiddleLayer ; i++){
     
-    neural_net.neurons[id].threshold = 2;
     neural_net.neurons[id].id = id;
     
     neural_net.neurons[id].firstLayer = false;
@@ -55,7 +53,6 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
   //init lastLayer
   for(int i = 0 ; i < nbNeuronsLastLayer ; i++){
     
-    neural_net.neurons[id].threshold = 2;
     neural_net.neurons[id].id = id;
     
     neural_net.neurons[id].firstLayer = false;
