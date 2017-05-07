@@ -34,7 +34,7 @@ creature* initCreatures(int nbCreatures){
   
   creature* creatures = malloc(nbCreatures*sizeof(creature));
 
-  int nbNeuronsFirstLayer = 4;
+  int nbNeuronsFirstLayer = 5;
   int nbNeuronsMiddleLayer = 15;
   int nbNeuronsLastLayer = 4;
 
@@ -184,8 +184,16 @@ bool canMove(position p, int direction, int** tab, int hs, creature* creatures, 
 //2 : down
 //3 : left
 void moveCreature(creature *c, int** tab, int hs, int iteration, creature* creatures, int nbCreatures, float* vision){
+
+  float inputs[c->brain.nbNeuronsFirstLayer];
+
+  inputs[0] = vision[0];
+  inputs[1] = vision[1];
+  inputs[2] = vision[2];
+  inputs[3] = vision[3];
+  inputs[4] = iteration;
   
-  int direction = getDirectionFromNeuralNetwork(c->brain, vision);
+  int direction = getDirectionFromNeuralNetwork(c->brain, inputs);
 
   c->prevPrevPos.x = c->prevPos.x;
   c->prevPrevPos.y = c->prevPos.y;

@@ -1,8 +1,5 @@
 #include "ga.h"
 
-#include "creature.h"
-#include "nn.h"
-
 char intChar(int a){
   
   switch(a){
@@ -81,7 +78,7 @@ nn loadCreatureBrain(char* path){
 
 }
 
-void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles){
+void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles, position* food, int nbFood){
   
   for(int i = 0 ; i < hs ; i++)
     for(int j = 0 ; j < hs ; j++)
@@ -89,10 +86,13 @@ void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position
   
   for(int i = 0 ; i < nbObstacles ; i++)
     tab[obstacles[i].x][obstacles[i].y] = 2; 
-  
-  
+
   for(int k = 0 ; k < nbCreatures ; k++)	
     tab[creatures[k].pos.x][creatures[k].pos.y] = 1;
+
+  for(int i = 0 ; i < nbFood ; i++){
+    tab[food[i].x][food[i].y] = 3;
+  }
   
 }
 
@@ -103,18 +103,22 @@ void display(int** tab, int hsize, creature* creatures, int nbCreatures){
 
       if(tab[i][j] == 0){
 	attron(COLOR_PAIR(3));	
-	printw(" ");
+	printw(" ");//background
       }
       else if(tab[i][j] == 2){
 	attron(COLOR_PAIR(2));
-	printw(" ");//obstackes
+	printw(" ");//obstacles
+      }
+      else if(tab[i][j] == 3){
+	attron(COLOR_PAIR(5));
+	printw(" ");//food 
       }
       else{
 	if(getIdByCoords(i, j, creatures, nbCreatures) == 0)
 	  attron(COLOR_PAIR(1));//red, best of last generation
 	else
 	  attron(COLOR_PAIR(4));
-
+	
 	printw(" ");//Creature
       }
       
@@ -126,12 +130,35 @@ void display(int** tab, int hsize, creature* creatures, int nbCreatures){
   }  
 }
 
-
-position* initObstacles(int s, int hs, creature* creatures, int nbCreatures){
-
-  position* obstacles = malloc(s*sizeof(position));
+position* initFood(int nbFood, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles){
   
-  for(int i = 0 ; i < s ; ++i){
+  position* food = malloc(nbFood*sizeof(position));
+  
+  for(int i = 0 ; i < nbFood ; ++i){
+    food[i].x = randomBetween(0, hs-1);
+    food[i].y = randomBetween(0, hs-1);
+    bool pass = true;
+    for(int j = 0 ; j < nbCreatures ; j++)
+      if(creatures[j].pos.x == food[i].x && creatures[j].pos.y == food[i].y){
+	i--;
+	pass = false;
+      }
+    
+    if(pass)
+      for(int j = 0 ; j < nbObstacles ; j++)
+	if(obstacles[j].x == food[i].x && obstacles[j].y == food[i].y)
+	  i--;
+    
+  }
+
+  return food; 
+}
+
+position* initObstacles(int nbObstacles, int hs, creature* creatures, int nbCreatures){
+
+  position* obstacles = malloc(nbObstacles*sizeof(position));
+  
+  for(int i = 0 ; i < nbObstacles ; ++i){
     obstacles[i].x = randomBetween(0, hs-1);
     obstacles[i].y = randomBetween(0, hs-1);
     for(int j = 0 ; j < nbCreatures ; j++)
@@ -159,12 +186,12 @@ int** initTab(int hs){
 }
 
 void usage(){
-  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles> <train_mode> <file_to_save>\n"); 
+  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles> <nbFood> <train_mode> <file_to_save>\n"); 
 }
 
 int main(int argc, char* argv[]){
 
-  if(argc!=7){
+  if(argc!=8){
     usage();
     return EXIT_SUCCESS;
   }
@@ -176,8 +203,9 @@ int main(int argc, char* argv[]){
   int nbCreatures = atoi(argv[2]);
   float s = atof(argv[3]);
   int nbObstacles = atoi(argv[4]);
-  bool train = atoi(argv[5]);
-  char* file_to_save = argv[6];
+  int nbFood = atoi(argv[5]);
+  bool train = atoi(argv[6]);
+  char* file_to_save = argv[7];
   
   creature* creatures = initCreatures(nbCreatures);
 
@@ -188,6 +216,8 @@ int main(int argc, char* argv[]){
   }
   
   position* obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
+
+  position* food = initFood(nbFood, hs, creatures, nbCreatures, obstacles, nbObstacles);
   
   s*=100000;
   s+=1;
@@ -203,15 +233,16 @@ int main(int argc, char* argv[]){
 
   start_color();
 
-  init_pair(1, COLOR_BLACK, COLOR_RED);
-  init_pair(2, COLOR_BLACK, COLOR_GREEN);
-  init_pair(3, COLOR_WHITE, COLOR_WHITE);
-  init_pair(4, COLOR_BLACK, COLOR_BLUE);
+  init_pair(1, COLOR_BLACK, COLOR_RED);//best creature of last gen
+  init_pair(2, COLOR_BLACK, COLOR_GREEN);//obstacles
+  init_pair(3, COLOR_WHITE, COLOR_WHITE);//background
+  init_pair(4, COLOR_BLACK, COLOR_BLUE);//creatures
+  init_pair(5, COLOR_BLACK, COLOR_YELLOW);//food
   
   while(1){
     while(iteration<100 && oneCreatureIsMoving(creatures, nbCreatures, iteration)){
 
-      updateTab(tab, hs, creatures, nbCreatures, obstacles, nbObstacles);
+      updateTab(tab, hs, creatures, nbCreatures, obstacles, nbObstacles, food, nbFood);
       updateCreatures(creatures, nbCreatures, hs, tab, iteration);
 
       display(tab, hs, creatures, nbCreatures);
