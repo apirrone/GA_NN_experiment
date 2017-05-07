@@ -52,6 +52,11 @@ nn loadCreatureBrain(char* path){
   char c;
   FILE *f = fopen(path, "r");
 
+  if(f==NULL){
+    printf("ERROR : no such file %s\n", path);
+    exit(0);
+  }
+  
   char* line=NULL;
   size_t len = 0;
   ssize_t read;
@@ -154,18 +159,15 @@ int** initTab(int hs){
 }
 
 void usage(){
-  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles> <train_mode>\n"); 
+  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles> <train_mode> <file_to_save>\n"); 
 }
 
 int main(int argc, char* argv[]){
 
-  if(argc!=6){
+  if(argc!=7){
     usage();
     return EXIT_SUCCESS;
   }
-  
-  /* loadCreatureBrain("test"); */
-  /* return 0; */
   
   srand(time(NULL));
   
@@ -175,12 +177,12 @@ int main(int argc, char* argv[]){
   float s = atof(argv[3]);
   int nbObstacles = atoi(argv[4]);
   bool train = atoi(argv[5]);
-
+  char* file_to_save = argv[6];
+  
   creature* creatures = initCreatures(nbCreatures);
 
-  if(train){
-    printf("trainint\n");
-    nn loadedBrain = loadCreatureBrain("OneOfLastEpoch");
+  if(!train){
+    nn loadedBrain = loadCreatureBrain(file_to_save);
     for(int i = 0 ; i < nbCreatures ; i++)
       creatures[i].brain = loadedBrain; 
   }
@@ -238,7 +240,7 @@ int main(int argc, char* argv[]){
       iteration++;
     }
     if(train)
-      saveBestCreatureBrain(creatures[0].brain, "OneOfLastEpoch");
+      saveBestCreatureBrain(creatures[0].brain, file_to_save);
     /* creature test = loadCreature("test"); */
     endwin();
     /* return 0; */
@@ -250,7 +252,7 @@ int main(int argc, char* argv[]){
       creatures = createNewGeneration(creatures, nbCreatures);
     else{
       creatures = initCreatures(nbCreatures);
-      nn loadedBrain = loadCreatureBrain("OneOfLastEpoch");
+      nn loadedBrain = loadCreatureBrain(file_to_save);
       for(int i = 0 ; i < nbCreatures ; i++)
 	creatures[i].brain = loadedBrain;       
     }
