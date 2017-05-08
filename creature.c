@@ -79,28 +79,27 @@ int getIdByCoords(int x, int y, creature* creatures, int nbCreatures){
 float* getVision(creature c, int tabSize, int** tab, creature* creatures, int nbCreatures){
   
   float* vision = malloc(VISION_SIZE*sizeof(float));
-  position coords = c.pos; 
-  
+  position coords = c.pos;    
   if( coords.y-1 <=0 || collision(coords, 0, creatures, nbCreatures, tab, tabSize))
     vision[0] = 1-(randomBetween(0, 30)/100); 
   else
     vision[0] = 0; 
-  
+
   if( coords.x+1 >= tabSize || collision(coords, 1, creatures, nbCreatures, tab, tabSize))
     vision[1] = 1-(randomBetween(0, 30)/100); 
   else
     vision[1] = 0; 
-  
+
   if( coords.y+1 >= tabSize || collision(coords, 2, creatures, nbCreatures, tab, tabSize))
     vision[2] = 1-(randomBetween(0, 30)/100); 
   else
     vision[2] = 0;
-  
+
   if( coords.x-1 <=0 || collision(coords, 3, creatures, nbCreatures, tab, tabSize))
     vision[3] = 1-(randomBetween(0, 30)/100); 
   else
     vision[3] = 0;
-  
+
   return vision;
   
 }
@@ -112,10 +111,10 @@ void updateCreatures(creature* creatures, int nbCreatures, int tabSize, int** ta
     float* vision = getVision(creatures[i], tabSize, tab, creatures, nbCreatures);
 
     moveCreature(&creatures[i], tab, tabSize, iteration, creatures, nbCreatures, vision);
-    
+    free(vision);
     if((creatures[i].pos.x == creatures[i].prevPrevPos.x && creatures[i].pos.y == creatures[i].prevPrevPos.y) ||
        (creatures[i].pos.x == creatures[i].prevPos.x && creatures[i].pos.y == creatures[i].prevPos.y))
-      creatures[i].score/0.1;
+	   creatures[i].score/0.1;
     
   }
   
@@ -184,7 +183,7 @@ bool canMove(position p, int direction, int** tab, int hs, creature* creatures, 
 //2 : down
 //3 : left
 void moveCreature(creature *c, int** tab, int hs, int iteration, creature* creatures, int nbCreatures, float* vision){
-
+  
   float inputs[c->brain.nbNeuronsFirstLayer];
 
   inputs[0] = vision[0];
@@ -431,7 +430,7 @@ genCode mixGenCode(genCode dad, genCode mom){
 
 genCode mutate(genCode g){
   
-  int selected = randomBetween(0, g.nbGenes);
+  int selected = randomBetween(0, g.nbGenes-1);
   g.genes[selected] += randomBetween(-100, 100);
 
   return g;

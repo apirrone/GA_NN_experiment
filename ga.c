@@ -65,7 +65,6 @@ nn loadCreatureBrain(char* path){
   int nbNeuronsFirstLayer = atoi(strtok(NULL, ";"));
   int nbNeuronsMiddleLayer = atoi(strtok(NULL, ";"));
   int nbNeuronsLastLayer = atoi(strtok(NULL, ";"));
-  
   float weights[nbLinks];
   for(int i = 0 ; i < nbLinks ; i++){
     read = getline(&line, &len, f);
@@ -73,12 +72,12 @@ nn loadCreatureBrain(char* path){
   }
   
   fclose(f);
-
+  /* printf("%d, %d, %d, %d\n", nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, nbLinks); */
   return initNeuralNetwork(nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, weights, nbLinks);
 
 }
 
-void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles, position* food, int nbFood){
+void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles){
   
   for(int i = 0 ; i < hs ; i++)
     for(int j = 0 ; j < hs ; j++)
@@ -90,9 +89,9 @@ void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position
   for(int k = 0 ; k < nbCreatures ; k++)	
     tab[creatures[k].pos.x][creatures[k].pos.y] = 1;
 
-  for(int i = 0 ; i < nbFood ; i++){
-    tab[food[i].x][food[i].y] = 3;
-  }
+  /* for(int i = 0 ; i < nbFood ; i++){ */
+  /*   tab[food[i].x][food[i].y] = 3; */
+  /* } */
   
 }
 
@@ -130,29 +129,29 @@ void display(int** tab, int hsize, creature* creatures, int nbCreatures){
   }  
 }
 
-position* initFood(int nbFood, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles){
+/* position* initFood(int nbFood, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles){ */
   
-  position* food = malloc(nbFood*sizeof(position));
+/*   position* food = malloc(nbFood*sizeof(position)); */
   
-  for(int i = 0 ; i < nbFood ; ++i){
-    food[i].x = randomBetween(0, hs-1);
-    food[i].y = randomBetween(0, hs-1);
-    bool pass = true;
-    for(int j = 0 ; j < nbCreatures ; j++)
-      if(creatures[j].pos.x == food[i].x && creatures[j].pos.y == food[i].y){
-	i--;
-	pass = false;
-      }
+/*   for(int i = 0 ; i < nbFood ; ++i){ */
+/*     food[i].x = randomBetween(0, hs-1); */
+/*     food[i].y = randomBetween(0, hs-1); */
+/*     bool pass = true; */
+/*     for(int j = 0 ; j < nbCreatures ; j++) */
+/*       if(creatures[j].pos.x == food[i].x && creatures[j].pos.y == food[i].y){ */
+/* 	i--; */
+/* 	pass = false; */
+/*       } */
     
-    if(pass)
-      for(int j = 0 ; j < nbObstacles ; j++)
-	if(obstacles[j].x == food[i].x && obstacles[j].y == food[i].y)
-	  i--;
+/*     if(pass) */
+/*       for(int j = 0 ; j < nbObstacles ; j++) */
+/* 	if(obstacles[j].x == food[i].x && obstacles[j].y == food[i].y) */
+/* 	  i--; */
     
-  }
+/*   } */
 
-  return food; 
-}
+/*   return food;  */
+/* } */
 
 position* initObstacles(int nbObstacles, int hs, creature* creatures, int nbCreatures){
 
@@ -186,12 +185,13 @@ int** initTab(int hs){
 }
 
 void usage(){
-  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles> <nbFood> <train_mode> <file_to_save>\n"); 
+  printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles> <train_mode> <file_to_save>\n");
+  /* printf("USAGE : ./ga <size_of_grid> <nb_creatures> <speed> <nb_obstacles> <nbFood> <train_mode> <file_to_save>\n");  */
 }
 
 int main(int argc, char* argv[]){
 
-  if(argc!=8){
+  if(argc!=7){
     usage();
     return EXIT_SUCCESS;
   }
@@ -203,21 +203,22 @@ int main(int argc, char* argv[]){
   int nbCreatures = atoi(argv[2]);
   float s = atof(argv[3]);
   int nbObstacles = atoi(argv[4]);
-  int nbFood = atoi(argv[5]);
-  bool train = atoi(argv[6]);
-  char* file_to_save = argv[7];
+  /* int nbFood = atoi(argv[5]); */
+  bool train = atoi(argv[5]);
+  char* file_to_save = argv[6];
   
   creature* creatures = initCreatures(nbCreatures);
 
   if(!train){
     nn loadedBrain = loadCreatureBrain(file_to_save);
+    
     for(int i = 0 ; i < nbCreatures ; i++)
       creatures[i].brain = loadedBrain; 
   }
   
   position* obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
 
-  position* food = initFood(nbFood, hs, creatures, nbCreatures, obstacles, nbObstacles);
+  /* position* food = initFood(nbFood, hs, creatures, nbCreatures, obstacles, nbObstacles); */
   
   s*=100000;
   s+=1;
@@ -242,7 +243,8 @@ int main(int argc, char* argv[]){
   while(1){
     while(iteration<100 && oneCreatureIsMoving(creatures, nbCreatures, iteration)){
 
-      updateTab(tab, hs, creatures, nbCreatures, obstacles, nbObstacles, food, nbFood);
+      updateTab(tab, hs, creatures, nbCreatures, obstacles, nbObstacles);
+      /* updateTab(tab, hs, creatures, nbCreatures, obstacles, nbObstacles, food, nbFood); */
       updateCreatures(creatures, nbCreatures, hs, tab, iteration);
 
       display(tab, hs, creatures, nbCreatures);
@@ -270,15 +272,16 @@ int main(int argc, char* argv[]){
       clear();
       iteration++;
     }
+    
     if(train)
       saveBestCreatureBrain(creatures[0].brain, file_to_save);
-    /* creature test = loadCreature("test"); */
+    
     endwin();
-    /* return 0; */
     iteration = 0;
     
     epoch ++;
     obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
+    
     if(train)
       creatures = createNewGeneration(creatures, nbCreatures);
     else{
@@ -287,6 +290,7 @@ int main(int argc, char* argv[]){
       for(int i = 0 ; i < nbCreatures ; i++)
 	creatures[i].brain = loadedBrain;       
     }
+    
   }
 
   printf("DONE\n");

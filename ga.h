@@ -20,9 +20,13 @@
 char intChar(int a);
 void saveBestCreatureBrain(nn brain, char* path);
 nn loadCreatureBrain(char* path);
-void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles, position* food, int nbFood);
+void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles);
+
+/* void updateTab(int** tab, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles, position* food, int nbFood); */
 void display(int** tab, int hsize, creature* creatures, int nbCreatures);
-position* initFood(int nbFood, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles);
+
+/* position* initFood(int nbFood, int hs, creature* creatures, int nbCreatures, position* obstacles, int nbObstacles); */
+
 position* initObstacles(int nbObstacles, int hs, creature* creatures, int nbCreatures);
 int** initTab(int hs);
 void usage();

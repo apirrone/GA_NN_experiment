@@ -3,7 +3,6 @@
 nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNeuronsLastLayer, float* genes, int nbGenes){
   
   nn neural_net;
-  
   neural_net.nbNeuronsFirstLayer = nbNeuronsFirstLayer;
   neural_net.nbNeuronsMiddleLayer = nbNeuronsMiddleLayer;
   neural_net.nbNeuronsLastLayer = nbNeuronsLastLayer;
@@ -43,9 +42,9 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
     int iterBeforeNeighbors = 0;
     
     for(int j = 0 ; j < neural_net.nbNeurons ; j++)
-      if(neural_net.neurons[j].firstLayer)
+	     if(neural_net.neurons[j].firstLayer)
 	neural_net.neurons[id].beforeNeighbors[iterBeforeNeighbors++] = neural_net.neurons[j].id; 
-
+    
     id++;
     
   }
