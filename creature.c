@@ -396,7 +396,7 @@ genCode mixGenChoseOne(genCode dad, genCode mom){
 genCode mixGenCodeOneGen(genCode dad, genCode mom){
   genCode gen;
 
-  int choice = randomBetween(0, dad.nbGenes);
+  int choice = randomBetween(0, dad.nbGenes-1);
   gen = dad;
   gen.genes[choice] = mom.genes[choice];
 

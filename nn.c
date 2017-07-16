@@ -1,7 +1,6 @@
 #include "nn.h"
 
 nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNeuronsLastLayer, float* genes, int nbGenes){
-  
   nn neural_net;
   neural_net.nbNeuronsFirstLayer = nbNeuronsFirstLayer;
   neural_net.nbNeuronsMiddleLayer = nbNeuronsMiddleLayer;
@@ -29,26 +28,26 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
 
   //init middleLayer  
   for(int i = 0 ; i < nbNeuronsMiddleLayer ; i++){
-    
+
     neural_net.neurons[id].id = id;
-    
+
     neural_net.neurons[id].firstLayer = false;
     neural_net.neurons[id].middleLayer = true;
     neural_net.neurons[id].lastLayer = false;
 
     neural_net.neurons[id].nbBeforeNeighbors = neural_net.nbNeuronsFirstLayer;
     neural_net.neurons[id].beforeNeighbors = malloc(neural_net.nbNeuronsFirstLayer*sizeof(int));
-    
+
     int iterBeforeNeighbors = 0;
     
     for(int j = 0 ; j < neural_net.nbNeurons ; j++)
-	     if(neural_net.neurons[j].firstLayer)
+      if(neural_net.neurons[j].firstLayer)
 	neural_net.neurons[id].beforeNeighbors[iterBeforeNeighbors++] = neural_net.neurons[j].id; 
     
     id++;
-    
+
   }
-  
+
   //init lastLayer
   for(int i = 0 ; i < nbNeuronsLastLayer ; i++){
     

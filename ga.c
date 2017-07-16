@@ -73,6 +73,9 @@ nn loadCreatureBrain(char* path){
   
   fclose(f);
   /* printf("%d, %d, %d, %d\n", nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, nbLinks); */
+  /* for(int i = 0 ; i < nbLinks ; i++) */
+  /*   printf("%f\n", weights[i]); */
+  
   return initNeuralNetwork(nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, weights, nbLinks);
 
 }
@@ -276,12 +279,11 @@ int main(int argc, char* argv[]){
     if(train)
       saveBestCreatureBrain(creatures[0].brain, file_to_save);
     
-    endwin();
     iteration = 0;
     
     epoch ++;
-    obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
     
+    obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
     if(train)
       creatures = createNewGeneration(creatures, nbCreatures);
     else{
