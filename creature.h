@@ -54,6 +54,7 @@ typedef struct creature creature;
 
 genCode initGenCode();
 creature* initCreatures(int nbCreatures);
+creature* initCreaturesWithBrain(int nbCreatures, nn loadedBrain);
 void updateCreatures(creature* creatures, int nbCreatures, int tabSize, int** tab, int iteration);
 int getIndiceMax(float* tab, int sizeTab);
 int getDirection(genCode gc);

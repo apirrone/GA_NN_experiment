@@ -72,9 +72,10 @@ nn loadCreatureBrain(char* path){
   }
   
   fclose(f);
-  /* printf("%d, %d, %d, %d\n", nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, nbLinks); */
-  /* for(int i = 0 ; i < nbLinks ; i++) */
-  /*   printf("%f\n", weights[i]); */
+  
+  printf("%d, %d, %d, %d\n", nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, nbLinks);
+  for(int i = 0 ; i < nbLinks ; i++)
+    printf("%f\n", weights[i]);
   
   return initNeuralNetwork(nbNeuronsFirstLayer, nbNeuronsMiddleLayer, nbNeuronsLastLayer, weights, nbLinks);
 
@@ -210,13 +211,18 @@ int main(int argc, char* argv[]){
   bool train = atoi(argv[5]);
   char* file_to_save = argv[6];
   
-  creature* creatures = initCreatures(nbCreatures);
-
-  if(!train){
+  creature* creatures;
+  
+  if(!train){//load file
     nn loadedBrain = loadCreatureBrain(file_to_save);
     
-    for(int i = 0 ; i < nbCreatures ; i++)
-      creatures[i].brain = loadedBrain; 
+    /* for(int i = 0 ; i < nbCreatures ; i++) */
+    /*   creatures[i].brain = loadedBrain; */
+    
+    creatures = initCreaturesWithBrain(nbCreatures, loadedBrain);
+  }
+  else{
+    creatures = initCreatures(nbCreatures);
   }
   
   position* obstacles = initObstacles(nbObstacles, hs, creatures, nbCreatures);
@@ -287,10 +293,10 @@ int main(int argc, char* argv[]){
     if(train)
       creatures = createNewGeneration(creatures, nbCreatures);
     else{
-      creatures = initCreatures(nbCreatures);
       nn loadedBrain = loadCreatureBrain(file_to_save);
-      for(int i = 0 ; i < nbCreatures ; i++)
-	creatures[i].brain = loadedBrain;       
+      creatures = initCreaturesWithBrain(nbCreatures, loadedBrain);
+      /* for(int i = 0 ; i < nbCreatures ; i++) */
+      /* 	creatures[i].brain = loadedBrain;        */
     }
     
   }

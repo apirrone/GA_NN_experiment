@@ -1,13 +1,15 @@
 #include "nn.h"
 
 nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNeuronsLastLayer, float* genes, int nbGenes){
+  
   nn neural_net;
   neural_net.nbNeuronsFirstLayer = nbNeuronsFirstLayer;
   neural_net.nbNeuronsMiddleLayer = nbNeuronsMiddleLayer;
   neural_net.nbNeuronsLastLayer = nbNeuronsLastLayer;
   neural_net.nbLinks = nbGenes;
   neural_net.nbNeurons = nbNeuronsFirstLayer+nbNeuronsMiddleLayer+nbNeuronsLastLayer;
-  neural_net.neurons = malloc(neural_net.nbNeurons*sizeof(neuron)); 
+  neural_net.neurons = malloc(neural_net.nbNeurons*sizeof(neuron));
+  int nbInitializedNeurons = 0;
 
   int id = 0; 
   
@@ -22,8 +24,10 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
 
     neural_net.neurons[id].beforeNeighbors = NULL;
     neural_net.neurons[id].nbBeforeNeighbors = 0;
-    id++;
     
+    id++;
+
+    nbInitializedNeurons++;
   }
 
   //init middleLayer  
@@ -34,18 +38,21 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
     neural_net.neurons[id].firstLayer = false;
     neural_net.neurons[id].middleLayer = true;
     neural_net.neurons[id].lastLayer = false;
-
+    
     neural_net.neurons[id].nbBeforeNeighbors = neural_net.nbNeuronsFirstLayer;
+    int* test = malloc(neural_net.nbNeuronsFirstLayer*sizeof(int));
     neural_net.neurons[id].beforeNeighbors = malloc(neural_net.nbNeuronsFirstLayer*sizeof(int));
 
     int iterBeforeNeighbors = 0;
     
-    for(int j = 0 ; j < neural_net.nbNeurons ; j++)
-      if(neural_net.neurons[j].firstLayer)
-	neural_net.neurons[id].beforeNeighbors[iterBeforeNeighbors++] = neural_net.neurons[j].id; 
+    for(int j = 0 ; j < nbInitializedNeurons ; j++)
+      if(neural_net.neurons[j].firstLayer){
+	neural_net.neurons[id].beforeNeighbors[iterBeforeNeighbors++] = neural_net.neurons[j].id;
+      }
     
     id++;
-
+    
+    nbInitializedNeurons++;
   }
 
   //init lastLayer
@@ -61,11 +68,14 @@ nn initNeuralNetwork(int nbNeuronsFirstLayer, int nbNeuronsMiddleLayer, int nbNe
     neural_net.neurons[id].beforeNeighbors = malloc(neural_net.nbNeuronsMiddleLayer*sizeof(int)); 
 
     int iterBeforeNeighbors = 0;
-    for(int j = 0 ; j < neural_net.nbNeurons ; j++)
+    /* for(int j = 0 ; j < neural_net.nbNeurons ; j++) */
+    for(int j = 0 ; j < nbInitializedNeurons ; j++)
       if(neural_net.neurons[j].middleLayer)
 	neural_net.neurons[id].beforeNeighbors[iterBeforeNeighbors++] = neural_net.neurons[j].id;
 
     id++;
+    
+    nbInitializedNeurons++;
   }
 
   neural_net.links = malloc(neural_net.nbLinks*sizeof(neuron_link)); 

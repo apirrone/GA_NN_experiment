@@ -66,6 +66,42 @@ creature* initCreatures(int nbCreatures){
   
 }
 
+creature* initCreaturesWithBrain(int nbCreatures, nn loadedBrain){
+  
+  creature* creatures = malloc(nbCreatures*sizeof(creature));
+
+  int nbNeuronsFirstLayer = 5;
+  int nbNeuronsMiddleLayer = 15;
+  int nbNeuronsLastLayer = 4;
+
+  int nbGenes = nbNeuronsFirstLayer*nbNeuronsMiddleLayer + nbNeuronsMiddleLayer*nbNeuronsLastLayer;
+  
+  for(int i = 0 ; i < nbCreatures ; i++){
+    
+    creatures[i].id = i;
+    creatures[i].life = INITIAL_LIFE;
+    creatures[i].score = 1;
+    creatures[i].iterationLastMoved = 0;
+    
+    creatures[i].originPos.x = 1;  
+    creatures[i].originPos.y = i+1;
+    
+    creatures[i].pos.x = 1;  
+    creatures[i].pos.y = i+1;
+    
+    creatures[i].prevPos.x = 1;
+    creatures[i].prevPos.y = i+1;
+    
+    creatures[i].gen = initGenCode(nbGenes);
+    
+    creatures[i].brain = loadedBrain;
+    
+  }
+
+  return creatures;
+  
+}
+
 int getIdByCoords(int x, int y, creature* creatures, int nbCreatures){
 
   for(int i = 0 ; i < nbCreatures ; i++)
